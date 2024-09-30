@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Chat with ChatGPT</title>
+</head>
+<body>
+<h1>ChatGPT Response</h1>
+<form action="#" th:action="@{/chat}" method="post">
+  <textarea name="userMessage" rows="4" cols="50" placeholder="Type your message here..."></textarea><br>
+  <button type="submit">Send</button>
+</form>
+
+<div th:if="${response}">
+  <h2>Response:</h2>
+  <p th:text="${response}"></p>
+</div>
+</body>
+</html>
