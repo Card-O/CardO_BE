@@ -23,15 +23,16 @@ public class ImageGenerationService {
     }
 
     public byte[] generateImage(String prompt) {
-        String url = "https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4"; // DeepAI API URL
-
+        String url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1"; // stable-diffusion
+        String extprompt = "A clean and organized card design with simple decorative borders, a minimalist background, and a blank space for adding text.";
+        String fprompt = prompt + extprompt;
         // HTTP 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization","Bearer "+ apiKey);
         System.out.println("Using API Key: " + apiKey);
         // 요청 본문 설정 (JSON 형식)
-        String requestBody = String.format("{\"inputs\":\"%s\"}", prompt);
+        String requestBody = String.format("{\"prompt\":\"%s\",\"negative_prompt\":\"no text,no numbers\",\"width\":64,\"height\":64}", fprompt);
         System.out.println(requestBody);
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
 
