@@ -4,8 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.concurrent.CompletableFuture;
 
-import java.util.Base64;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/chat")
@@ -26,48 +27,53 @@ public class ChatgptController {
     }
 
     @PostMapping
-    public ResponseEntity<PromotionImageResponse> chat(@RequestBody String userMessage) {
-        System.out.println("chat 메서드가 호출되었습니다."); // 로그 추가
-        String plusString = "그런 다음, 그 문구에 맞는 이미지 생성 프롬프트도 만들어주세요. 홍보 문구와 영어 이미지 프롬프트는 어떠한 추가 설명 없이 두 내용을 '---'로 구분해주세요.";
-        String userMessageAdded = userMessage + plusString;
-        try {
-            String response = chatGptService.getChatGptResponse(userMessageAdded);
+    public String chat(@RequestBody Map<String, String> data) {
+        System.out.println("Chat 메서드 호출됨");
+        String when = data.get("input1"); // 홍보 날짜
+        String where = data.get("input2"); // 홍보 위치
+        String what = data.get("input3"); // 홍보 대상
+        String how = data.get("input4"); // 홍보 물체의 무엇을 홍보하는가
 
-            String[] parts = response.split("---");
+        // 첫 번째 요청: 홍보 문자 생성
+        String promotionRequest = when + ", " + where + ", " + what + ", " + how
+                + " 내용의 홍보 문자를 만들어 주세요.";
 
-            String promotionText = parts[0].replace("[홍보 문구]", "").replace("홍보 문구:","").trim();
-            String imagePrompt = parts[1].replace("[영어 이미지 프롬프트]", "").trim();
-            byte[] image = imageController.generateImage(imagePrompt);
+        // 두 번째 요청: 단어 번역
+        String translationRequest = "단어 '" + what + "'를 영어로 번역해 주세요. 결과는 단어만 제공해 주세요.";
 
-            // 3. 바이트 배열을 Base64 문자열로 변환
-            String imageBase64 = Base64.getEncoder().encodeToString(image);
-            System.out.println(promotionText);
-            System.out.println(imageBase64);
-            return ResponseEntity.ok()
-                    .body(new PromotionImageResponse(promotionText, imageBase64));
+        try {       // 홍보 문자 생성
+            String promotiontext = chatGptService.getChatGptResponse(promotionRequest);
+
+            CompletableFuture.runAsync(() -> { // 동시에 코드 실행. 비동기적 흐름
+                String text = "";
+                try {
+                    text = chatGptService.getChatGptResponse(translationRequest);
+                }catch (Exception e){
+                    System.out.println(e.getMessage());
+                }
+
+                String translatedtext = text.replace("'",""); //  따옴표 제거
+                System.out.println(translatedtext); // LOG
+                // ImagePrompt
+                String ImagePrompt = "Design a Card Design featuring " + translatedtext + "without any text or numbers.";
+                String[] ImageUrl = imageController.generateImageUrl(ImagePrompt); // 이미지url 3개 받아오기
+
+                for(String url:ImageUrl){ // LOG
+                System.out.println(url);
+                }
+
+                imageController.ImageURLSave(ImageUrl);
+                System.out.println("ALL SYSTEMS GOING RIGHT!"); //LOG
+
+            });
+
+            return promotiontext;
         } catch (Exception e) {
-            e.printStackTrace();
-            PromotionImageResponse errorResponse = new PromotionImageResponse("에러가 발생했습니다.", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse); // 500 Internal Server Error
+            return e.getMessage();
         }
+
+
+
     }
 
-}
-class PromotionImageResponse {
-    private String promotionText;
-    private String imageBase64;
-
-    public PromotionImageResponse(String promotionText, String imageBase64) {
-        this.promotionText = promotionText;
-        this.imageBase64 = imageBase64;
-    }
-
-    // Getter와 Setter
-    public String getPromotionText() {
-        return promotionText;
-    }
-
-    public String getImageBase64() {
-        return imageBase64;
-    }
 }

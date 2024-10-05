@@ -26,7 +26,7 @@ public class ImageGenerationService {
         this.restTemplate = restTemplate;
     }
 
-    public byte[] generateImage(String prompt) {
+    public String[] generateImage(String prompt) {
         // String url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1"; // stable-diffusion
         String url ="https://api.openai.com/v1/images/generations"; // DALL-E ENDPOINT
         // String extprompt = "A clean and organized card design with simple decorative borders, a minimalist background.";
@@ -39,7 +39,7 @@ public class ImageGenerationService {
         // 요청 본문 설정 (JSON 형식)
         Map<String, Object> body = new HashMap<>();
         body.put("prompt", prompt);
-        body.put("n", 1); // 이미지 개수
+        body.put("n", 3); // 이미지 개수
         body.put("size", "256x256"); // 이미지 크기
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
@@ -47,24 +47,18 @@ public class ImageGenerationService {
         // API 호출
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
 
-        if (response.getStatusCode() == HttpStatus.OK) {
-            Map responseBody = response.getBody();  // 응답 본문이 Map 형태로 반환됨
-            if (responseBody != null && responseBody.containsKey("data")) {
-                // "data" 필드는 리스트(List) 형태이며, 첫 번째 요소는 이미지 정보를 담은 Map
-                String imageurl = ((Map<String, String>) ((List<?>) responseBody.get("data")).get(0)).get("url");
-                try {
-                    return downloadImageAsBytes(imageurl);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
+        // 응답에서 이미지 URL 추출
+        List<Map<String, String>> data = (List<Map<String, String>>) response.getBody().get("data");
+        String[] imageUrls = new String[data.size()]; // 크기가 3인 String 배열
+
+        for (int i = 0; i < data.size(); i++) {
+            imageUrls[i] = data.get(i).get("url");
         }
 
-
-        return null;
+        return imageUrls;
     }
 
-    public byte[] downloadImageAsBytes(String imageUrl) throws Exception {
+   /* public byte[] downloadImageAsBytes(String imageUrl) throws Exception {
         // 이미지 URL 객체 생성
         URL url = new URL(imageUrl);
 
@@ -96,4 +90,5 @@ public class ImageGenerationService {
         }
 
 
-}}
+} */
+}

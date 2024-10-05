@@ -2,16 +2,23 @@ package com.example.testserver.DB;
 
 import jakarta.persistence.*;
 
+import java.awt.*;
+
 @Entity
 public class ImageEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Lob // 대용량 객체로 지정
-    private byte[] imageData;
+    private String imageUrl;
 
-    private String fileName;
+    public ImageEntity() {
+    }
+    public ImageEntity(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 
     public Long getId() {
         return id;
@@ -21,20 +28,11 @@ public class ImageEntity {
         this.id = id;
     }
 
-    public byte[] getImageData() {
-        return imageData;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setImageData(byte[] imageData) {
-        this.imageData = imageData;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
 }
