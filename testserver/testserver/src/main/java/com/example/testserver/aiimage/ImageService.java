@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
+import java.util.Optional;
 
 @Service
 public class ImageService {
@@ -25,5 +26,16 @@ public class ImageService {
 
         public String getSmallestIDurl() {
             return imageRepository.findSmallestIdImageUrl();
+        }
+
+        public String findUrlById(long id) {
+            Optional<ImageEntity> imageEntity = imageRepository.findById(id);
+            String url = imageEntity.isPresent() ? imageEntity.get().getImageUrl() : null;
+            return url;
+        }
+
+        public void deleteallimages() {
+            imageRepository.deleteAll();
+            imageRepository.resetAutoIncrement();
         }
     }

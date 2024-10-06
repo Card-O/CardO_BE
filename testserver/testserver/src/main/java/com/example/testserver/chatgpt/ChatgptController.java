@@ -1,5 +1,6 @@
 package com.example.testserver.chatgpt;
-import com.example.testserver.aiimage.ImageController;
+import com.example.testserver.aiimage.ImageGenerationService;
+import com.example.testserver.aiimage.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,17 +9,20 @@ import java.util.concurrent.CompletableFuture;
 
 import java.util.Map;
 
+
 @RestController
 @RequestMapping("/chat")
 public class ChatgptController {
 
-    @Autowired
-    private ImageController imageController;
-
+    private String ImagePrompt;
     private final ChatgptService chatGptService;
+    private final ImageGenerationService imageGenerationService;
+    private final ImageService imageService;
 
-    public ChatgptController(ChatgptService chatGptService) {
+    public ChatgptController(ChatgptService chatGptService,ImageGenerationService imageGenerationService,ImageService imageService) {
         this.chatGptService = chatGptService;
+        this.imageGenerationService = imageGenerationService;
+        this.imageService = imageService;
     }
 
     @GetMapping
@@ -35,19 +39,20 @@ public class ChatgptController {
         String how = data.get("input4"); // 홍보 물체의 무엇을 홍보하는가
 
         // 첫 번째 요청: 홍보 문자 생성
-        String promotionRequest = when + ", " + where + ", " + what + ", " + how
-                + " 내용의 홍보 문자를 만들어 주세요.";
+        String promotionPrompt = chatGptService.makePromotionPrompt(when,where,what,how);
 
         // 두 번째 요청: 단어 번역
-        String translationRequest = "단어 '" + what + "'를 영어로 번역해 주세요. 결과는 단어만 제공해 주세요.";
+        String translationPrompt = chatGptService.makeTranslationPrompt(what);
+
+
 
         try {       // 홍보 문자 생성
-            String promotiontext = chatGptService.getChatGptResponse(promotionRequest);
+            String promotiontext = chatGptService.getChatGptResponse(promotionPrompt);
 
             CompletableFuture.runAsync(() -> { // 동시에 코드 실행. 비동기적 흐름
                 String text = "";
                 try {
-                    text = chatGptService.getChatGptResponse(translationRequest);
+                    text = chatGptService.getChatGptResponse(translationPrompt);
                 }catch (Exception e){
                     System.out.println(e.getMessage());
                 }
@@ -55,14 +60,14 @@ public class ChatgptController {
                 String translatedtext = text.replace("'",""); //  따옴표 제거
                 System.out.println(translatedtext); // LOG
                 // ImagePrompt
-                String ImagePrompt = "Design a Card Design featuring " + translatedtext + "without any text or numbers.";
-                String[] ImageUrl = imageController.generateImageUrl(ImagePrompt); // 이미지url 3개 받아오기
+                String ImagePrompt = chatGptService.makeImagePrompt(translatedtext);
+                String[] ImageUrl = imageGenerationService.generateImage(ImagePrompt); // 이미지url 3개 받아오기
 
                 for(String url:ImageUrl){ // LOG
                 System.out.println(url);
                 }
 
-                imageController.ImageURLSave(ImageUrl);
+                imageService.saveImageUrls(ImageUrl);
                 System.out.println("ALL SYSTEMS GOING RIGHT!"); //LOG
 
             });
@@ -71,8 +76,6 @@ public class ChatgptController {
         } catch (Exception e) {
             return e.getMessage();
         }
-
-
 
     }
 

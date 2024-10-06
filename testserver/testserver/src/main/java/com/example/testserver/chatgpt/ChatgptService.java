@@ -21,6 +21,18 @@ public class ChatgptService {
         this.restTemplate = restTemplate;
     }
 
+    public String makePromotionPrompt(String when, String where, String what, String how) {
+        return when + ", " + where + ", " + what + ", " + how + " 내용의 홍보 문자를 만들어 주세요.";
+    }
+
+    public String makeTranslationPrompt(String what){
+        return "단어 '" + what + "'를 영어로 번역해 주세요. 결과는 단어만 제공해 주세요.";
+    }
+
+    public String makeImagePrompt(String translatedtext) {
+        return "Design a Card Design featuring " + translatedtext + "without any text or numbers.";
+    }
+
     public String getChatGptResponse(String userMessage) throws Exception {
         String url = "https://api.openai.com/v1/chat/completions";
 
