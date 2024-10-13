@@ -1,15 +1,10 @@
 package com.example.testserver.aiimage;
 
 import com.example.testserver.DB.ImageRepository;
-import com.example.testserver.chatgpt.ChatgptController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.concurrent.CompletableFuture;
+import reactor.core.publisher.Mono;
 
 
 @RestController
@@ -28,9 +23,9 @@ public class ImageController {
     }
 
     @PostMapping("/generate-imageurl")
-    public String[] generateImageUrl(@RequestBody String prompt) {
+    public Mono<String[]> generateImageUrl(@RequestBody String prompt) {
 
-        String[] imageURL = imageGenerationService.generateImage(prompt);
+        Mono<String[]> imageURL = imageGenerationService.generateImage(prompt);
 
         return imageURL;
 
