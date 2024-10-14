@@ -28,25 +28,46 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String authorizationHeader = request.getHeader("Authorization");
-
+        String requestURI = request.getRequestURI();
         String username = null;
         String jwt = null;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwt);
+        // login or register 엔드포인트인 경우 JWT 검사 건너뛰기
+        if (requestURI.equals("/auth/login") || requestURI.equals("/auth/register")) {
+            filterChain.doFilter(request, response); // 다음 필터로 이동
+            System.out.println("JWT 검사 제외 대상");
+            return; // 더 이상 JWT 검사 로직을 실행하지 않음
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        // JWT가 존재하는지 확인
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT가 존재하지 않습니다."); // 인증 에러
+            return; // 필터 체인 종료
+        }
+
+        // JWT 추출
+        jwt = authorizationHeader.substring(7);
+        username = jwtUtil.extractUsername(jwt);
+
+        // JWT가 있는 경우 해당 JWT가 유효한지 검사
+        if (username != null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            // JWT 유효성 검증
+            if (!jwtUtil.validateToken(jwt, userDetails.getUsername())) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 JWT입니다."); // 유효하지 않은 경우 에러
+                return; // 필터 체인 종료
             }
+
+            // JWT가 유효한 경우에만 인증 성공
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
+
+        // 다음 필터 체인으로 진행
         filterChain.doFilter(request, response);
     }
+
 }
 
