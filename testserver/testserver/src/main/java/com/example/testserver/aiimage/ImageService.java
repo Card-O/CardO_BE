@@ -1,39 +1,43 @@
 package com.example.testserver.aiimage;
 
+import com.example.testserver.DB.CustomImageRepositoryImpl;
 import com.example.testserver.DB.ImageRepository;
 import com.example.testserver.DB.ImageEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
+
 import java.util.Optional;
 
 @Service
 public class ImageService {
 
-        @Autowired
-        private ImageRepository imageRepository;
 
+        private final ImageRepository imageRepository;
+        @Autowired
+        public ImageService(ImageRepository imageRepository) {
+            this.imageRepository = imageRepository;
+        }
         @Transactional
-        public void saveImageUrls(String[] urls) {
+        public Mono<Void> saveImageUrls(String[] urls) {
             for (String url : urls) {
                 System.out.println("Saving url:" + url);
                 ImageEntity image = new ImageEntity(url);
-                imageRepository.save(image);
+                System.out.println("이미지 저장 시도");
+                imageRepository.save(image).subscribe();
             }
+            return null;
         }
 
-        public String getSmallestIDurl() {
-            return imageRepository.findSmallestIdImageUrl();
-        }
-
-        public String findUrlById(long id) {
-            Optional<ImageEntity> imageEntity = imageRepository.findById(id);
-            String url = imageEntity.isPresent() ? imageEntity.get().getImageUrl() : null;
-            return url;
-        }
+    public Mono<String> findUrlById(long id) {
+        return imageRepository.findById(id) // Returns Mono<ImageEntity>
+                .map(ImageEntity::getimage_url) // Get the image URL from the ImageEntity
+                .switchIfEmpty(Mono.just("Image Not found")); // Return null if the entity is not found
+    }
 
         public void deleteallimages() {
-            imageRepository.deleteAll();
-            imageRepository.resetAutoIncrement();
+            imageRepository.deleteAll().subscribe();
+            imageRepository.resetAutoIncrement().subscribe();
         }
     }

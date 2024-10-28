@@ -1,38 +1,40 @@
 package com.example.testserver.DB;
 
-import jakarta.persistence.*;
+
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.awt.*;
 
-@Entity
+@Table("image_entity")
 public class ImageEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
-    @Lob // 대용량 객체로 지정
-    private String imageUrl;
+    private String image_url;
 
     public ImageEntity() {
     }
     public ImageEntity(String imageUrl) {
-        this.imageUrl = imageUrl;
+        this.image_url = imageUrl;
     }
 
-    public Long getId() {
+    public Long getid() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setid(Long id) {
         this.id = id;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getimage_url() {
+        return image_url;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setimage_url(String imageUrl) {
+        this.image_url = imageUrl;
     }
 }

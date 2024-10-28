@@ -24,16 +24,16 @@ public class ChatgptService {
                 .build();
     }
 
-    public String makePromotionPrompt(String when, String where, String what, String how) {
-        return when + ", " + where + ", " + what + ", " + how + " 내용의 홍보 문자를 만들어 주세요.";
+    public String makePromotionPrompt(String time, String target, String what) {
+        return time + ", " + target + ", " + what + " 내용의 홍보 문자를 만들어 주세요.";
     }
 
-    public String makeTranslationPrompt(String what) {
-        return "단어 '" + what + "'를 영어로 번역해 주세요. 결과는 단어만 제공해 주세요.";
+    public String makeTranslationPrompt(String target) {
+        return "단어 '" + target + "'를 영어로 번역해 주세요. 결과는 단어만 제공해 주세요.";
     }
 
-    public String makeImagePrompt(String translatedtext) {
-        return translatedtext + ", minimalist style ,no text no numbers.";
+    public String makeImagePrompt(String translatedtext,String atmosphere) {
+        return translatedtext + ", "+atmosphere+" ,no text no numbers.";
     }
 
     public Mono<String> getChatGptResponse(String userMessage) {

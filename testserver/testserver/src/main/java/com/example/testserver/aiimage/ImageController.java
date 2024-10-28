@@ -14,12 +14,11 @@ public class ImageController {
 
     private final ImageGenerationService imageGenerationService;
     private final ImageService imageService;
-    private final ImageRepository imageRepository;
 
-    public ImageController(ImageGenerationService imageGenerationService, ImageService imageService, ImageRepository imageRepository) {
+
+    public ImageController(ImageGenerationService imageGenerationService, ImageService imageService) {
         this.imageGenerationService = imageGenerationService;
         this.imageService = imageService;
-        this.imageRepository = imageRepository;
     }
 
     @PostMapping("/generate-imageurl")
@@ -36,15 +35,15 @@ public class ImageController {
     }
 
     @GetMapping("/generate-image")
-    public String generateImage() {
-        String url = imageService.findUrlById(id);
+    public Mono<String> generateImage() {
+        Mono<String> url = imageService.findUrlById(id);
         return url;
     }
 
     @GetMapping("/generate-next-image")
-    public String generatenextImage() {
+    public Mono<String> generatenextImage() {
         id++;
-        String url = imageService.findUrlById(id);
+        Mono<String> url = imageService.findUrlById(id);
         return url;
     }
 

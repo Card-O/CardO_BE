@@ -1,61 +1,85 @@
 package com.example.testserver.secure;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import io.jsonwebtoken.Jwt;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import reactor.core.publisher.Mono;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 public class SecurityConfig {
 
-
     private final MyUserDetailsService myUserDetailsService;
-    // 사용자 세부 정보 서비스
+    private final PasswordEncoder passwordEncoder;
 
-    private final JwtFilter jwtFilter; // JWT 필터
-
-    public SecurityConfig(MyUserDetailsService myUserDetailsService, JwtFilter jwtFilter) {
+    public SecurityConfig(MyUserDetailsService myUserDetailsService,PasswordEncoder passwordEncoder) {
         this.myUserDetailsService = myUserDetailsService;
-        this.jwtFilter = jwtFilter;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/**","/chat","/image/**").permitAll() // 로그인 및 등록은 허용
-                        .anyRequest().authenticated() // 나머지 요청은 인증 필요
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, JwtUtil jwtUtil) {
+        JwtFilter jwtFilter = new JwtFilter(jwtUtil,myUserDetailsService);
+        return http
+                .csrf(csrf -> csrf.disable()) // CSRF 비활성화
+                .authorizeExchange(authorize -> authorize
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS 요청 허용
+                        .pathMatchers("/auth/**").permitAll() // 인증 관련 경로 허용
+                        .anyExchange().authenticated() // 나머지 경로는 인증 필요
                 )
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 상태 비저장 세션 설정
-                );
-
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
-
-        return http.build(); // SecurityFilterChain 반환
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) // STATELESS
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint((exchange, ex) -> {
+                            return Mono.fromRunnable(() -> {
+                                exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                            });
+                        })
+                )
+                .addFilterBefore(jwtFilter, SecurityWebFiltersOrder.AUTHORIZATION) // JWT 필터 추가
+                .build();
     }
 
     @Bean
-    public AuthenticationManager authManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder =
-                http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.userDetailsService(myUserDetailsService).passwordEncoder(passwordEncoder());
-        return authenticationManagerBuilder.build(); // AuthenticationManager 반환
-    }
+    public ReactiveAuthenticationManager reactiveAuthenticationManager() {
+        return authentication -> {
+            String username = authentication.getName();
+            String password = (String) authentication.getCredentials();
+            System.out.println("username:"+username);
+            System.out.println("password:"+password);
+            return myUserDetailsService.findByUsername(username)
+                    .doOnNext(userDetails -> {
+                        System.out.println("User details found: " + userDetails);
+                    })
+                    .doOnError(e -> {
+                        System.err.println("Error retrieving user: " + e.getMessage());
+                    })
+                    .flatMap(userDetails -> {
+                        System.out.println(userDetails.getPassword());
+                        if (passwordEncoder.matches(password, userDetails.getPassword())) {
+                            Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
+                            return Mono.just(auth);
+                        } else {
+                            return Mono.error(new BadCredentialsException("Invalid credentials")); // 여기서 예외 발생
+                        }
+                    })
+                    .switchIfEmpty(Mono.error(new BadCredentialsException("Invalid credentials")));
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // 비밀번호 암호화 방식 설정
+        };
+                // 실제 인증 로직 구현
+
+
+
     }
 }
