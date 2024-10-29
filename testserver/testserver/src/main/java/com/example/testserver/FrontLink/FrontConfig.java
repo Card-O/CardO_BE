@@ -26,7 +26,9 @@ public class FrontConfig implements WebFluxConfigurer {
 
         registry.addMapping("/image/**") // API 경로에 대한 CORS 설정
                 .allowedOrigins("http://localhost:5173") // 프론트엔드 주소
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
 
         registry.addMapping("/users") // API 경로에 대한 CORS 설정
                 .allowedOrigins("http://localhost:5173") // 프론트엔드 주소
