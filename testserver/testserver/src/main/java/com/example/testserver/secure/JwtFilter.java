@@ -65,6 +65,8 @@ public class JwtFilter implements WebFilter {
 
         // JWT 유효성 검증 및 사용자 정보 가져오기
         return userDetailsService.findByUsername(username)
+                .doOnSubscribe(subscription -> logger.info("findByUsername 호출 시작"))
+                .doOnNext(user -> logger.info("findByusername 호출 결과:", user))
                 .flatMap(userDetails -> {
                     // JWT 유효성 검증
                     boolean isValid = jwtUtil.validateToken(jwt, userDetails.getUsername());
@@ -89,10 +91,6 @@ public class JwtFilter implements WebFilter {
                     return chain.filter(exchange)
                             .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(context)));
                 })
-                .switchIfEmpty(Mono.defer(() -> {
-                    logger.error("사용자를 찾지 못했습니다.");
-                    return Mono.error(new RuntimeException("사용자를 찾을 수 없습니다."));
-                }))
                 .onErrorResume(ex -> {
                     logger.error("에러 발생: {}", ex.getMessage());
                     return Mono.empty(); // 적절한 Mono를 반환합니다.

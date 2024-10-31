@@ -27,7 +27,7 @@ public class ImageService {
                 System.out.println("이미지 저장 시도");
                 imageRepository.save(image).subscribe();
             }
-            return null;
+            return Mono.empty();
         }
 
     public Mono<String> findUrlById(long id) {
