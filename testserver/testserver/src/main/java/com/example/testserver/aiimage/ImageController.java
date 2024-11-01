@@ -10,7 +10,6 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/image")
 public class ImageController {
-    private long id = 1;
 
     private final ImageGenerationService imageGenerationService;
     private final ImageService imageService;
@@ -31,19 +30,17 @@ public class ImageController {
     }
 
     public void ImageURLSave(String[] imageURLs) {
-        imageService.saveImageUrls(imageURLs);
     }
 
     @GetMapping("/generate-image")
     public Mono<String> generateImage() {
-        Mono<String> url = imageService.findUrlById(id);
+        Mono<String> url = imageService.findLowestImgNumByUserId();
         return url;
     }
 
     @GetMapping("/generate-next-image")
     public Mono<String> generatenextImage() {
-        id++;
-        Mono<String> url = imageService.findUrlById(id);
+        Mono<String> url = imageService.findNextUrlById();
         return url;
     }
 

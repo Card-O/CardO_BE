@@ -11,30 +11,37 @@ import java.awt.*;
 public class ImageEntity {
 
     @Id
+    private Integer imagenumber;
 
-    private Long id;
+    private Long userid;
+    private String imageurl;
 
-    private String image_url;
-
-    public ImageEntity() {
-    }
-    public ImageEntity(String imageUrl) {
-        this.image_url = imageUrl;
-    }
-
-    public Long getid() {
-        return id;
+    public ImageEntity(Long userid, String imageurl) {
+        this.userid = userid;
+        this.imageurl = imageurl;
     }
 
-    public void setid(Long id) {
-        this.id = id;
+    public Long getUserid() {
+        return userid;
     }
 
-    public String getimage_url() {
-        return image_url;
+    public void setUserid(Long userid) {
+        this.userid = userid;
     }
 
-    public void setimage_url(String imageUrl) {
-        this.image_url = imageUrl;
+    public Integer getImagenumber() {
+        return imagenumber;
+    }
+
+    public void setImagenumber(Integer imagenumber) {
+        this.imagenumber = imagenumber;
+    }
+
+    public String getImageurl() {
+        return imageurl;
+    }
+
+    public void setImageurl(String imageurl) {
+        this.imageurl = imageurl;
     }
 }

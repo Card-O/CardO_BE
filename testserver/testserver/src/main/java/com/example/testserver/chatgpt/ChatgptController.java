@@ -98,7 +98,8 @@ public class ChatgptController {
                                         System.out.println("이미지 URL " + i + "번: " + imageUrls[i]);
                                     }
                                     System.out.println("이미지 URL을 DB에 저장을 시작합니다.");
-                                    return imageService.saveImageUrls(imageUrls)
+                                    return imageService.saveImageUrls(imageUrls,securityContext)
+                                            .doOnSuccess(user -> System.out.println("사용자 정보: " + user))
                                             .then(Mono.just("비동기 작업 완료"));
                                 });
                     } else {

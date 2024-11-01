@@ -1,5 +1,6 @@
 package com.example.testserver.secure;
 
+import com.example.testserver.DB.User;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -61,7 +62,9 @@ public class JwtFilter implements WebFilter {
         // JWT가 존재하는 경우
         String jwt = authHeader.substring(7); // "Bearer " 이후의 토큰 부분
         String username = jwtUtil.extractUsername(jwt);
+        UserContextHolder.setUserId(username); // FOR ImageService
         logger.info("추출된 Username: {}", username);
+        System.out.println("USerContextHolder 의 username:"+UserContextHolder.getUserId());
 
         // JWT 유효성 검증 및 사용자 정보 가져오기
         return userDetailsService.findByUsername(username)
