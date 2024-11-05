@@ -39,7 +39,15 @@ public class ImageRepository {
                         .sort(Sort.by("imagenumber").ascending()))
                 .first()
                 .map(ImageEntity::getImageurl);
-                        // 두 개의 이미지를 가져옵니다.
 
-    };
+
+    }
+    public Mono<Integer> findLowestImageNumByUserId(Long userId) {
+        return template.select(ImageEntity.class)
+                .matching(Query.query(Criteria.where("userid").is(userId))
+                        .sort(Sort.by("imagenumber").ascending()))
+                .first()
+                .map(ImageEntity::getImagenumber);
+    }
+
 }

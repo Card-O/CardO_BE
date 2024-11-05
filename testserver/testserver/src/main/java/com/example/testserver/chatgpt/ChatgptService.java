@@ -25,7 +25,7 @@ public class ChatgptService {
     }
 
     public String makePromotionPrompt(String time, String target, String what) {
-        return time + ", " + target + ", " + what + " 내용의 홍보 문자를 만들어 주세요.";
+        return time + ", " + target + ", " + what + " 내용의 홍보 문자를 만들어 주세요. 문자는 짧고 간결하게 만들어 주세요.";
     }
 
     public String makeTranslationPrompt(String target) {
