@@ -99,17 +99,4 @@ public class ImageController {
                 });
 
         }
-
-
-
-    @DeleteMapping("/deleteallimage")
-    public ResponseEntity<String> deleteAllImages() {
-        try {
-            imageService.deleteallimages(); // 서비스 레이어에서 삭제 처리
-            return ResponseEntity.ok("All images deleted successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting images.");
-        }
-    }
-
 }

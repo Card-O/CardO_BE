@@ -62,13 +62,8 @@ public class ImageService {
 
                 });
     }
-        public void deleteallimages() {
-            userRepository.findByUsername(username)
-                    .flatMap(user -> {
-                        Long userId = user.getId(); // 사용자 ID 가져오기
-                        return imageRepository.deleteByUserId(userId); // 이미지 삭제// 오토 인크리먼트 리셋
-                    })
-                    .subscribe();
+        public void deleteallimages(Long userid) {
+                 imageRepository.deleteByUserId(userid).subscribe(); // 이미지 삭제// 오토 인크리먼트
         }
 
     public Mono<String> findLowestImgUrlByUserId(SecurityContext securityContext) {

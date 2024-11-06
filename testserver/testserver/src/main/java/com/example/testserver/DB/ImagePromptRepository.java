@@ -26,4 +26,13 @@ public class ImagePromptRepository {
         ImagePrompt newImagePrompt = new ImagePrompt(userId,imagePrompt);
         return r2dbcEntityTemplate.insert(newImagePrompt);
     }
+
+    // 사용자 ID로 모든 행 삭제
+    public Mono<Void> deleteByUserId(Long userId) {
+        return r2dbcEntityTemplate.delete(ImagePrompt.class)
+                .matching(Query.query(Criteria.where("userid").is(userId)))
+                .all()
+                .then();  // 삭제 후 아무 것도 반환하지 않음
+    }
+
 }
