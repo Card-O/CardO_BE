@@ -34,5 +34,11 @@ public class FrontConfig implements WebFluxConfigurer {
                 .allowedOrigins("http://localhost:5173") // 프론트엔드 주소
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
 
+
+        registry.addMapping("/address/**")
+                .allowedOrigins("http://localhost:5173")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 }

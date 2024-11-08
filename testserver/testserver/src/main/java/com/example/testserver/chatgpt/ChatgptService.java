@@ -33,7 +33,7 @@ public class ChatgptService {
     }
 
     public String makeImagePrompt(String translatedtext,String atmosphere) {
-        return translatedtext + ", "+atmosphere+" ,no text no numbers.";
+        return atmosphere + " " + translatedtext + ", no text no numbers.";
     }
 
     public Mono<String> getChatGptResponse(String userMessage) {
