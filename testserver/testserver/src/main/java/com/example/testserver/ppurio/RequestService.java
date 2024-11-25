@@ -197,9 +197,13 @@ public class RequestService {
     }
 
     public HashMap<String, Object> encodeImageToBase64(byte[] jpegBytes) {
+
+	if (jpegBytes == null || jpegBytes.length == 0) {
+        throw new RuntimeException("이미지 데이터가 비어 있습니다.");
+    }
         // Base64 인코딩
         String encodedFileData = Base64.getEncoder().encodeToString(jpegBytes);
-
+	 
         // 파일 정보 맵 생성
         HashMap<String, Object> params = new HashMap<>();
         params.put("size", jpegBytes.length);
