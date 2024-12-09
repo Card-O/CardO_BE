@@ -29,7 +29,8 @@ public class ImageGenerationService {
         Map<String, Object> body = new HashMap<>();
         body.put("prompt", prompt);
         body.put("n", 3); // 이미지 개수
-        body.put("size", "512x512"); // 이미지 크기
+        body.put("response_format","b64_json");
+        body.put("size", "256x256"); // 이미지 크기
 
         // API 호출
         return webClient.post()
@@ -44,7 +45,7 @@ public class ImageGenerationService {
                     String[] imageUrls = new String[data.size()]; // 크기가 3인 String 배열
 
                     for (int i = 0; i < data.size(); i++) {
-                        imageUrls[i] = data.get(i).get("url");
+                        imageUrls[i] = data.get(i).get("b64_json");
                     }
                     return imageUrls;
                 });

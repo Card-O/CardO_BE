@@ -1,11 +1,9 @@
 package com.example.testserver.DB;
 
 
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.awt.*;
 
 @Table("image_entity")
 public class ImageEntity {

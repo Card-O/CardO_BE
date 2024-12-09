@@ -1,6 +1,6 @@
 package com.example.testserver.secure;
 
-import com.example.testserver.DB.User;
+
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;

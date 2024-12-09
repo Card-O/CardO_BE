@@ -14,6 +14,7 @@ public class AddressBookService {
     }
 
     public Flux<AddressBook> getAddressBooksByUserId(Long userId) {
-        return addressBookRepository.findByUserId(userId);
+        return addressBookRepository.findByUserId(userId)
+                .switchIfEmpty(Flux.error(new RuntimeException("No address book entries found")));
     }
 }

@@ -39,7 +39,7 @@ public class SecurityConfig {
                         .pathMatchers("/auth/**").permitAll() // 인증 관련 경로 허용
                         .anyExchange().authenticated() // 나머지 경로는 인증 필요
                 )
-                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) // STATELESS
+               .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) // STATELESS
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint((exchange, ex) -> {
                             return Mono.fromRunnable(() -> {

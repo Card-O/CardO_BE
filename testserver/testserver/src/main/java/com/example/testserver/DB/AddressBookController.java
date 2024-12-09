@@ -11,14 +11,25 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/address")
 public class AddressBookController {
     private final AddressBookService addressBookService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public AddressBookController(AddressBookService addressBookService) {
+    public AddressBookController(AddressBookService addressBookService, UserRepository userRepository) {
         this.addressBookService = addressBookService;
+        this.userRepository = userRepository;
     }
 
-    @GetMapping("/{userId}")
-    public Flux<AddressBook> getAddressBooks(@PathVariable Long userId) {
-        return addressBookService.getAddressBooksByUserId(userId);
+//    @GetMapping("/{userId}")
+//    public Flux<AddressBook> getAddressBooks(@PathVariable Long userId) {
+//        return addressBookService.getAddressBooksByUserId(userId);
+//    }
+
+    @GetMapping("/{username}")
+    public Flux<AddressBook> getAddressBooksByUsername(@PathVariable String username) {
+        // username으로 User를 찾고, 해당 User의 id를 이용해 주소록 조회
+        return userRepository.findByUsername(username)
+                .flatMapMany(user -> addressBookService.getAddressBooksByUserId(user.getId()))
+                .switchIfEmpty(Flux.error(new RuntimeException("User not found or no address book entries")));
     }
+
 }
